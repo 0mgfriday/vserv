@@ -5,43 +5,51 @@
 import argparse
 import sys
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from functools import partial
 
 class SimpleHandler(BaseHTTPRequestHandler):
+    def __init__(self, timeout, redirect_location, redirect_sc, *args, **kwargs):
+        self.timeout = timeout
+        self.redirect_location = redirect_location
+        self.redirect_sc = redirect_sc
+        super().__init__(*args, **kwargs)
+
     def setup(self):
         BaseHTTPRequestHandler.setup(self)
-        self.request.settimeout(5)
+        self.request.settimeout(self.timeout)
 
     def version_string(self):
         """Value of Server response header"""
         return ''
 
+    def respond(self):
+        if self.redirect_location != '':
+            self.send_response(self.redirect_sc)
+            self.send_header('Location', self.redirect_location)    
+        else:
+            self.send_response(200)
+        self.end_headers()
+
     def do_GET(self):
-       self.send_response(200)
-       self.end_headers()
+       self.respond()
 
     def do_HEAD(self):
-       self.send_response(200)
-       self.end_headers()
+       self.respond()
     
     def do_POST(self):
-       self.send_response(200)
-       self.end_headers()
+       self.respond()
 
     def do_PUT(self):
-       self.send_response(200)
-       self.end_headers()
+       self.respond()
     
     def do_PATCH(self):
-       self.send_response(200)
-       self.end_headers()
+       self.respond()
 
     def do_DELETE(self):
-       self.send_response(200)
-       self.end_headers()
+       self.respond()
 
     def do_OPTIONS(self):
-       self.send_response(200)
-       self.end_headers()
+       self.respond()
 
     def log_message(self, format, *args):
         print('\033[92mRequest from: ' + self.client_address[0] + ' - ' + self.log_date_time_string() + '\033[0m')
@@ -63,10 +71,15 @@ parser = argparse.ArgumentParser(
     description='Simple web server that logs request details',
     epilog='https://github.com/0mgfriday/vserv')
 
-parser.add_argument('-p', '--port', required=True)
+parser.add_argument('-p', '--port', required=True, help='Port to listen on')
+parser.add_argument('-t', '--timeout',type=int, default=5, help='Timeout for requests')
+parser.add_argument('-rl', '--redirectlocation', default='', help='Redirect request to the specified URL')
+parser.add_argument('-rs', '--redirectstatuscode', type=int, choices=[301,302,303,307,308], default=302, help='Status code to use for redirects')
 args = parser.parse_args()
 
-with HTTPServer(("", int(args.port)), SimpleHandler) as httpd:
+handler = partial(SimpleHandler, args.timeout, args.redirectlocation, args.redirectstatuscode)
+
+with HTTPServer(("", int(args.port)), handler) as httpd:
     print('\033[94mServing on port ' + args.port + '\033[0m\n')
     try:
         httpd.serve_forever()
