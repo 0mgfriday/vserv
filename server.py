@@ -44,7 +44,7 @@ class SimpleHandler(BaseHTTPRequestHandler):
        self.end_headers()
 
     def log_message(self, format, *args):
-        print('Request from: ' + self.client_address[0] + ' - ' + self.log_date_time_string())
+        print('\033[92mRequest from: ' + self.client_address[0] + ' - ' + self.log_date_time_string() + '\033[0m')
         print(self.requestline)
         print(str(self.headers))
         if ('Content-Length' in self.headers):
@@ -55,7 +55,7 @@ class SimpleHandler(BaseHTTPRequestHandler):
             try:
                 print(self.rfile.read(content_length).decode('utf-8'))
             except OSError:
-                print('Info: Request timed out')
+                print('\033[93mInfo: Request timed out\033[0m')
 
 
 parser = argparse.ArgumentParser(
@@ -67,7 +67,7 @@ parser.add_argument('-p', '--port', required=True)
 args = parser.parse_args()
 
 with HTTPServer(("", int(args.port)), SimpleHandler) as httpd:
-    print('Serving on port ' + args.port + '\n')
+    print('\033[94mServing on port ' + args.port + '\033[0m\n')
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
