@@ -2,6 +2,7 @@
 
 # https://github.com/python/cpython/blob/3.12/Lib/http/server.py
 
+import argparse
 import sys
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
@@ -55,15 +56,18 @@ class SimpleHandler(BaseHTTPRequestHandler):
                 print(self.rfile.read(content_length).decode('utf-8'))
             except OSError:
                 print('Info: Request timed out')
-        
-if len(sys.argv)-1 != 1:
-    print("""
-Usage: {} <port_number>
-    """.format(sys.argv[0]))
-    sys.exit()
 
-with HTTPServer(("", int(sys.argv[1])), SimpleHandler) as httpd:
-    print('Serving on port ' + sys.argv[1] + '\n')
+
+parser = argparse.ArgumentParser(
+    prog='vserv',
+    description='Simple web server that logs request details',
+    epilog='https://github.com/0mgfriday/vserv')
+
+parser.add_argument('-p', '--port', required=True)
+args = parser.parse_args()
+
+with HTTPServer(("", int(args.port)), SimpleHandler) as httpd:
+    print('Serving on port ' + args.port + '\n')
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
