@@ -68,7 +68,7 @@ class SimpleHandler(BaseHTTPRequestHandler):
 
 
 parser = argparse.ArgumentParser(
-    prog='vserv',
+    prog='vserv.py',
     description='Simple web server that logs request details',
     epilog='https://github.com/0mgfriday/vserv')
 
