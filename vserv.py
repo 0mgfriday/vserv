@@ -54,17 +54,22 @@ class SimpleHandler(BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
         print('\033[92mRequest from: ' + self.client_address[0] + ' - ' + self.log_date_time_string() + '\033[0m')
-        print(self.requestline)
-        print(str(self.headers))
-        if ('Content-Length' in self.headers):
-            content_length = int(self.headers['Content-Length'])
-            if (content_length > 0):
-                if (content_length > 1048576):
-                    content_length = 1048576
-            try:
-                print(self.rfile.read(content_length).decode('utf-8'))
-            except OSError:
-                print('\033[93mInfo: Request timed out\033[0m')
+        if hasattr(self,'requestline'):
+            print(self.requestline)
+        else:
+            print('')
+        
+        if hasattr(self,'headers'):
+            print(str(self.headers))
+            if ('Content-Length' in self.headers):
+                content_length = int(self.headers['Content-Length'])
+                if (content_length > 0):
+                    if (content_length > 1048576):
+                        content_length = 1048576
+                try:
+                    print(self.rfile.read(content_length).decode('utf-8'))
+                except OSError:
+                    print('\033[93mInfo: Request timed out\033[0m')
 
 
 parser = argparse.ArgumentParser(
